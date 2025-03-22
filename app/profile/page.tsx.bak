@@ -1,0 +1,294 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+import { toast } from "sonner"
+
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+}
+
+export default function ProfilePage() {
+  const [isEditing, setIsEditing] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
+
+  // Check if user is logged in and get user data
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem('isLoggedIn')
+    
+    if (!isLoggedIn) {
+      router.push('/login')
+      return
+    }
+
+    try {
+      const userData = localStorage.getItem('user')
+      
+      if (userData) {
+        setUser(JSON.parse(userData))
+      }
+    } catch (error) {
+      console.error('Error parsing user data:', error)
+    }
+    
+    setIsLoading(false)
+  }, [router])
+
+  // Get initials for avatar fallback
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+  }
+
+  // Handle user logout
+  const handleLogout = () => {
+    // Clear localStorage
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    localStorage.removeItem('isLoggedIn')
+    
+    toast.success('Logged out successfully')
+    router.push('/login')
+  }
+
+  // Sample user profile data - in a real app, this would come from an API
+  const userProfile = {
+    major: "Computer Science",
+    year: "Junior",
+    bio: "Computer Science student with interests in AI, web development, and mobile apps. Looking to connect with fellow students for study groups and projects.",
+    courses: ["CS101", "CS201", "CS301", "CS401"],
+    interests: ["Artificial Intelligence", "Web Development", "Mobile Apps", "Gaming"],
+  }
+
+  if (isLoading) {
+    return <div className="flex min-h-screen items-center justify-center">Loading...</div>
+  }
+
+  return (
+    <div className="flex min-h-screen flex-col">
+      <header className="border-b bg-background">
+        <div className="container flex h-16 items-center justify-between px-4">
+          <h1 className="text-xl font-bold">Profile</h1>
+          <div className="flex items-center gap-4">
+            <Link href="/dashboard">
+              <Button variant="outline">Back to Dashboard</Button>
+            </Link>
+            <Button variant="ghost" size="sm" onClick={handleLogout}>
+              Logout
+            </Button>
+          </div>
+        </div>
+      </header>
+      <main className="flex-1 container py-6 px-4 md:px-6">
+        <div className="grid gap-6 md:grid-cols-[1fr_2fr]">
+          <Card>
+            <CardHeader className="text-center">
+              <Avatar className="h-24 w-24 mx-auto">
+                {user?.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
+                <AvatarFallback>{user?.name ? getInitials(user.name) : 'U'}</AvatarFallback>
+              </Avatar>
+              <CardTitle className="mt-4">{user?.name || 'User'}</CardTitle>
+              <CardDescription>
+                {userProfile.major} • {userProfile.year}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h3 className="text-sm font-medium mb-2">Email</h3>
+                <p className="text-sm">{user?.email || 'No email available'}</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium mb-2">Courses</h3>
+                <div className="flex flex-wrap gap-2">
+                  {userProfile.courses.map((course, i) => (
+                    <div key={i} className="bg-primary/10 text-primary rounded-full px-3 py-1 text-xs">
+                      {course}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium mb-2">Interests</h3>
+                <div className="flex flex-wrap gap-2">
+                  {userProfile.interests.map((interest, i) => (
+                    <div key={i} className="bg-muted rounded-full px-3 py-1 text-xs">
+                      {interest}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button variant="outline" className="w-full" onClick={() => setIsEditing(!isEditing)}>
+                {isEditing ? "Cancel Editing" : "Edit Profile"}
+              </Button>
+            </CardFooter>
+          </Card>
+
+          <div className="space-y-6">
+            <Tabs defaultValue="about">
+              <TabsList className="grid grid-cols-4 w-full">
+                <TabsTrigger value="about">About</TabsTrigger>
+                <TabsTrigger value="settings">Settings</TabsTrigger>
+                <TabsTrigger value="privacy">Privacy</TabsTrigger>
+                <TabsTrigger value="notifications">Notifications</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="about" className="space-y-4 pt-4">
+                {isEditing ?
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Edit Profile Information</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Full Name</Label>
+                        <Input id="name" defaultValue={user?.name || ''} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input id="email" type="email" defaultValue={user?.email || ''} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="major">Major</Label>
+                          <Input id="major" defaultValue={userProfile.major} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="year">Year</Label>
+                          <Input id="year" defaultValue={userProfile.year} />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="bio">Bio</Label>
+                        <Textarea id="bio" defaultValue={userProfile.bio} rows={4} />
+                      </div>
+                    </CardContent>
+                    <CardFooter>
+                      <Button className="w-full" onClick={() => setIsEditing(false)}>
+                        Save Changes
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ) :
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>About Me</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm">{userProfile.bio}</p>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+
+              <TabsContent value="settings" className="space-y-4 pt-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Account Settings</CardTitle>
+                    <CardDescription>Manage your account preferences</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Change Password</Label>
+                      <Input id="password" type="password" placeholder="New password" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirm-password">Confirm Password</Label>
+                      <Input id="confirm-password" type="password" placeholder="Confirm new password" />
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button>Update Password</Button>
+                  </CardFooter>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="privacy" className="space-y-4 pt-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Privacy Settings</CardTitle>
+                    <CardDescription>Control who can see your information</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="profile-visibility">Profile Visibility</Label>
+                        <p className="text-sm text-muted-foreground">Make your profile visible to other students</p>
+                      </div>
+                      <Switch id="profile-visibility" defaultChecked />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="online-status">Online Status</Label>
+                        <p className="text-sm text-muted-foreground">Show when you're online to others</p>
+                      </div>
+                      <Switch id="online-status" defaultChecked />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="read-receipts">Read Receipts</Label>
+                        <p className="text-sm text-muted-foreground">Let others know when you've read their messages</p>
+                      </div>
+                      <Switch id="read-receipts" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="notifications" className="space-y-4 pt-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Notification Preferences</CardTitle>
+                    <CardDescription>Manage how you receive notifications</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="email-notifications">Email Notifications</Label>
+                        <p className="text-sm text-muted-foreground">Receive notifications via email</p>
+                      </div>
+                      <Switch id="email-notifications" defaultChecked />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="chat-notifications">Chat Notifications</Label>
+                        <p className="text-sm text-muted-foreground">Receive notifications for new messages</p>
+                      </div>
+                      <Switch id="chat-notifications" defaultChecked />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="course-notifications">Course Updates</Label>
+                        <p className="text-sm text-muted-foreground">Receive notifications for course updates</p>
+                      </div>
+                      <Switch id="course-notifications" defaultChecked />
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+      </main>
+    </div>
+  )
+}
+
