@@ -1,6 +1,6 @@
-# CollageMedia Chat Application
+# CollageMedia Social media Application
 
-A real-time chat application built with Next.js and Socket.io.
+This is a social media application that is restricted to a specific campus and this cover all student needs by giving healthy community 
 
 ## Features
 
