@@ -1,0 +1,27 @@
+{
+  "name": "college-media",
+  "version": "1.0.0",
+  "description": "College Media Platform with Next.js frontend and Express backend",
+  "main": "index.js",
+  "scripts": {
+    "frontend": "cd frontend && npm run dev",
+    "backend": "cd backend && npm run dev",
+    "dev": "concurrently \"npm run frontend\" \"npm run backend\"",
+    "frontend:build": "cd frontend && npm run build",
+    "backend:build": "cd backend && npm run build",
+    "build": "npm run frontend:build && npm run backend:build",
+    "start": "cd backend && npm start"
+  },
+  "keywords": [
+    "nextjs",
+    "express",
+    "mongodb",
+    "college",
+    "education"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+} 
