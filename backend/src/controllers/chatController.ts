@@ -207,7 +207,7 @@ export const sendMessage = async (req: AuthRequest, res: Response): Promise<void
     }
 
     // Check if user is a participant in the chat
-    if (!chat.participants.includes(req.user._id)) {
+    if (!chat.participants.some(participant => participant.toString() === req.user?._id.toString())) {
       res.status(403).json({
         success: false,
         error: 'Not authorized to send messages in this chat',
@@ -217,14 +217,14 @@ export const sendMessage = async (req: AuthRequest, res: Response): Promise<void
 
     // Create the message
     const message = await Message.create({
-      sender: req.user._id,
+      sender: new mongoose.Types.ObjectId(req.user._id),
       content,
       timestamp: new Date(),
     });
 
     // Add message to the chat
-    chat.messages.push(message._id);
-    chat.lastMessage = message._id;
+    chat.messages.push(new mongoose.Types.ObjectId(message._id));
+    chat.lastMessage = new mongoose.Types.ObjectId(message._id);
     await chat.save();
 
     const populatedMessage = await Message.findById(message._id).populate(

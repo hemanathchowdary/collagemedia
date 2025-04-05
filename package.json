@@ -4,13 +4,13 @@
   "description": "College Media Platform with Next.js frontend and Express backend",
   "main": "index.js",
   "scripts": {
-    "frontend": "cd frontend && npm run dev",
-    "backend": "cd backend && npm run dev",
-    "dev": "concurrently \"npm run frontend\" \"npm run backend\"",
-    "frontend:build": "cd frontend && npm run build",
-    "backend:build": "cd backend && npm run build",
-    "build": "npm run frontend:build && npm run backend:build",
-    "start": "cd backend && npm start"
+    "frontend": "cd frontend && pnpm run dev",
+    "backend": "cd backend && pnpm run dev",
+    "dev": "concurrently \"pnpm run frontend\" \"pnpm run backend\"",
+    "frontend:build": "cd frontend && pnpm run build",
+    "backend:build": "cd backend && pnpm run build",
+    "build": "pnpm run frontend:build && pnpm run backend:build",
+    "start": "cd backend && pnpm start"
   },
   "keywords": [
     "nextjs",
